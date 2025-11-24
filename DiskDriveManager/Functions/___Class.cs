@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DiskDriveManager.DiskDrive
+namespace DiskDriveManager.Functions
 {
     internal class ___Class
     {

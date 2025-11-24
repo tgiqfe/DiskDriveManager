@@ -1,8 +1,8 @@
-﻿using System;
+﻿using DiskDriveManager.Functions;
+using System;
 using System.Collections.Generic;
 using System.Management;
 using System.Text;
-using Test436.Functions;
 
 namespace DiskDriveManager.DiskDrive
 {
@@ -17,9 +17,10 @@ namespace DiskDriveManager.DiskDrive
     {
         #region Public parameter
 
-        public uint Index { get; set; }
+        public uint DiskNumber { get; set; }
         public bool Online { get; set; }
         public string DeviceId { get; set; }
+        public string DiskPath { get; set; }
         public long Size { get; set; }
         public string SizeText { get { return TextFunctions.FormatFileSize(this.Size); } }
         public string SerialNumber { get; set; }
@@ -33,8 +34,9 @@ namespace DiskDriveManager.DiskDrive
 
         public DiskItem(ManagementObject wmi_diskdrive, ManagementObject wmi_storage, ManagementObject wmi_physicalDisks)
         {
-            this.Index = (uint)wmi_diskdrive["Index"];
+            this.DiskNumber = (uint)wmi_diskdrive["Index"];
             this.DeviceId = wmi_diskdrive["DeviceID"] as string;
+            this.DiskPath = wmi_storage["Path"] as string;
             this.Size = Convert.ToInt64((ulong)wmi_diskdrive["Size"]);
             this.SerialNumber = wmi_diskdrive["SerialNumber"] as string;
             this.Model = wmi_diskdrive["Model"] as string;
@@ -52,21 +54,15 @@ namespace DiskDriveManager.DiskDrive
 
         public static IEnumerable<DiskItem> Load()
         {
-            var wmi_diskdrives = new ManagementClass("Win32_DiskDrive").
-                GetInstances().
-                OfType<ManagementObject>();
-            var wmi_storages = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Disk", new ObjectGetOptions()).
-                GetInstances().
-                OfType<ManagementObject>();
-            var wmi_physicaldisks = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_PhysicalDisk", new ObjectGetOptions()).
-                GetInstances().
-                OfType<ManagementObject>();
+            var wmi_diskdrives = new ManagementClass("Win32_DiskDrive").GetInstances().OfType<ManagementObject>();
+            var wmi_storages = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Disk", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
+            var wmi_physicaldisks = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_PhysicalDisk", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
 
             return wmi_diskdrives.Select(x =>
-                new DiskItem(x, 
+                new DiskItem(x,
                     wmi_storages.FirstOrDefault(y => (uint)x["Index"] == (uint)y["Number"]),
                     wmi_physicaldisks.FirstOrDefault(y => ((uint)x["Index"]).ToString() == y["DeviceId"] as string))).
-                OrderBy(x => x.Index);
+                OrderBy(x => x.DiskNumber);
         }
 
         #region Dynamic/Basic, MBR/GPT disk checking
