@@ -16,26 +16,30 @@ namespace DiskDriveManager.DiskDrive
     {
         public uint DiskNumber { get; set; }
         public uint PartitionNumber { get; set; }
-        public bool Unsigned { get; set; }
+        public bool? Unallocated { get; set; }
         public string DiskPath { get; set; }
-        public long Offset { get; set; }
-        public long Size { get; set; }
+        public ulong Offset { get; set; }
+        public ulong Size { get; set; }
         public string SizeText { get { return TextFunctions.FormatFileSize(this.Size); } }
         public string DriveLetter { get; set; }
 
-        public PartitionItem(ManagementObject wmi_pysicalpartition, ManagementObject wmi_diskpartition)
+        public PartitionItem() { }
+
+        public PartitionItem(ManagementObject wmi_storagePartition)
         {
-            this.DiskNumber = (uint)wmi_pysicalpartition["DiskNumber"];
-            this.PartitionNumber = (uint)wmi_pysicalpartition["PartitionNumber"];
-            this.DiskPath = wmi_pysicalpartition["DiskId"] as string;
+            this.DiskNumber = (uint)wmi_storagePartition["DiskNumber"];
+            this.PartitionNumber = (uint)wmi_storagePartition["PartitionNumber"];
+            this.DiskPath = wmi_storagePartition["DiskId"] as string;
+            this.Offset = (ulong)wmi_storagePartition["Offset"];
+            this.Size = (ulong)wmi_storagePartition["Size"];
+            this.DriveLetter = wmi_storagePartition["DriveLetter"] as string;
         }
 
-        public static PartitionItem[] Load()
+        public static IEnumerable<PartitionItem> Load()
         {
-            var wmi_pysicalpartitions = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Partition", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
-            var wmi_diskpartitions = new ManagementClass("Win32_DiskPartition").GetInstances().OfType<ManagementObject>();
+            var wmi_storagePartition = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Partition", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
 
-            return null;
+            return wmi_storagePartition.Select(x => new PartitionItem(x)).ToArray();
         }
     }
 }

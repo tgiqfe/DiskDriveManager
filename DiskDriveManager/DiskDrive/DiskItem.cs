@@ -21,7 +21,7 @@ namespace DiskDriveManager.DiskDrive
         public bool Online { get; set; }
         public string DeviceId { get; set; }
         public string DiskPath { get; set; }
-        public long Size { get; set; }
+        public ulong Size { get; set; }
         public string SizeText { get { return TextFunctions.FormatFileSize(this.Size); } }
         public string SerialNumber { get; set; }
         public string Model { get; set; }
@@ -29,6 +29,7 @@ namespace DiskDriveManager.DiskDrive
         public bool IsDynamicDisc { get; set; }
         public bool IsOffline { get; set; }
         public PhysicalDiskType PhysicalDiskType { get; set; }
+        public PartitionItem[] Partitions { get; set; }
 
         #endregion
 
@@ -37,7 +38,7 @@ namespace DiskDriveManager.DiskDrive
             this.DiskNumber = (uint)wmi_diskdrive["Index"];
             this.DeviceId = wmi_diskdrive["DeviceID"] as string;
             this.DiskPath = wmi_storage["Path"] as string;
-            this.Size = Convert.ToInt64((ulong)wmi_diskdrive["Size"]);
+            this.Size = (ulong)wmi_diskdrive["Size"];
             this.SerialNumber = wmi_diskdrive["SerialNumber"] as string;
             this.Model = wmi_diskdrive["Model"] as string;
             (this.PartitionStyle, this.IsDynamicDisc) = CheckDiskStyle();
