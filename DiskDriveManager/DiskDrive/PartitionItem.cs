@@ -16,7 +16,9 @@ namespace DiskDriveManager.DiskDrive
     {
         public uint DiskNumber { get; set; }
         public uint PartitionNumber { get; set; }
+        public bool Unsigned { get; set; }
         public string DiskPath { get; set; }
+        public long Offset { get; set; }
         public long Size { get; set; }
         public string SizeText { get { return TextFunctions.FormatFileSize(this.Size); } }
         public string DriveLetter { get; set; }
