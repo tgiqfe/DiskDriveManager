@@ -142,6 +142,25 @@ namespace DiskDriveManager.Functions
         }
 
         /// <summary>
+        /// Number -> String
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="number"></param>
+        /// <param name="map"></param>
+        /// <returns></returns>
+        public static string FlagsToString<T>(int number, Dictionary<string[], T> map) where T : Enum
+        {
+            foreach(var kvp in map)
+            {
+                if (number == (int)(object)kvp.Value)
+                {
+                    return kvp.Key[0];
+                }
+            }
+            return "Unknown";
+        }
+
+        /// <summary>
         /// String -> Corrected String
         /// (string[], T) map to get the correct casing
         /// </summary>
