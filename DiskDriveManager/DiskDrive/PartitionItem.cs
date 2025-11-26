@@ -1,6 +1,7 @@
 ﻿using DiskDriveManager.Functions;
 using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Management;
 using System.Text;
 
@@ -21,28 +22,87 @@ namespace DiskDriveManager.DiskDrive
         public ulong Size { get; set; }
         public string SizeText { get { return TextFunctions.FormatFileSize(this.Size); } }
         public string DriveLetter { get; set; }
+        public bool RecoveryPartition { get; set; }
         public bool? Unallocated { get; set; }
-        public bool? RecoveryPartition { get; set; }
-        public ushort MbrType { get; set; }
-        public string GptType { get; set; }
+
+        private static readonly string[] RecoveryGptGuids = new string[]
+        {
+            "DE94BBA4-06D1-4D40-A16A-BFD50179D6AC"
+        };
+        private static readonly int[] RecoveryMbrTypes = new int[]
+        {
+            0x27
+        };
 
         public PartitionItem() { }
 
-        public PartitionItem(ManagementObject wmi_storagePartition)
+        public PartitionItem(ManagementObject wmi_partition)
         {
-            this.DiskNumber = (uint)wmi_storagePartition["DiskNumber"];
-            this.PartitionNumber = (uint)wmi_storagePartition["PartitionNumber"];
-            this.DiskPath = wmi_storagePartition["DiskId"] as string;
-            this.Offset = (ulong)wmi_storagePartition["Offset"];
-            this.Size = (ulong)wmi_storagePartition["Size"];
-            this.DriveLetter = wmi_storagePartition["DriveLetter"] as string;
+            this.DiskNumber = (uint)wmi_partition["DiskNumber"];
+            this.PartitionNumber = (uint)wmi_partition["PartitionNumber"];
+            this.DiskPath = wmi_partition["DiskId"] as string;
+            this.Offset = (ulong)wmi_partition["Offset"];
+            this.Size = (ulong)wmi_partition["Size"];
+            this.DriveLetter = wmi_partition["DriveLetter"] as string;
+            this.RecoveryPartition = IsRecoveryPartition(wmi_partition);
         }
 
         public static IEnumerable<PartitionItem> Load()
         {
-            var wmi_storagePartition = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Partition", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
+            var wmi_partitions = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Partition", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
 
-            return wmi_storagePartition.Select(x => new PartitionItem(x));
+            return wmi_partitions.Select(x => new PartitionItem(x));
+        }
+
+        private bool IsRecoveryPartition(ManagementObject wmi_partition)
+        {
+            try
+            {
+                // Check GPT type Recovery Partition GUID
+                Func<string, bool> checkGptType = (text) =>
+                {
+                    if (!string.IsNullOrEmpty(text))
+                    {
+                        var guidText = text.Trim().Trim('{', '}');
+                        return RecoveryGptGuids.Any(x => x.Equals(guidText, StringComparison.OrdinalIgnoreCase));
+                    }
+                    return false;
+                };
+                var ret = checkGptType(wmi_partition["GptType"] as string);
+                if (ret) return true;
+                ret = checkGptType(wmi_partition["GptTypeGuid"] as string);
+                if (ret) return true;
+
+                //  Check MBR type Recovery Partition Type
+                Func<object, bool> checkMbrType = (obj) =>
+                {
+                    if(obj != null)
+                    {
+                        var s = obj.ToString();
+                        if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var num = Convert.ToInt32(s.Substring(2), 16);
+                            if (RecoveryMbrTypes.Any(x => x == num)) return true;
+                        }
+                        else if (int.TryParse(s, out int num))
+                        {
+                            if (RecoveryMbrTypes.Any(x => x == num)) return true;
+                        }
+                        else
+                        {
+                            if (obj is byte b && RecoveryMbrTypes.Any(x => x == b)) return true;
+                            if (obj is int i && RecoveryMbrTypes.Any(x => x == i)) return true;
+                        }
+                    }
+                    return false;
+                };
+                ret = checkMbrType(wmi_partition["MbrType"]);
+                if (ret) return true;
+                ret = checkMbrType(wmi_partition["Type"]);
+                if (ret) return true;
+            }
+            catch { }
+            return false;
         }
     }
 }

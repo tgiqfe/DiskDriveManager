@@ -24,22 +24,22 @@ namespace DiskDriveManager.DiskDrive
         public string SizeFreeText { get { return TextFunctions.FormatFileSize(SizeFree); } }
         public DriveType DriveType { get; set; }
 
-        public DriveItem(ManagementObject wmi_storageVolume)
+        public DriveItem(ManagementObject wmi_volume)
         {
-            this.Label = wmi_storageVolume["FileSystemLabel"] as string;
-            this.Path = wmi_storageVolume["Path"] as string;
-            this.DriveLetter = wmi_storageVolume["DriveLetter"] as string;
-            this.FileSystemType = FileSystemTypeParser.RawToParam((ushort)wmi_storageVolume["FileSystemType"]);
-            this.Size = (ulong)(wmi_storageVolume["Size"] ?? 0UL);
-            this.SizeFree = (ulong)(wmi_storageVolume["SizeRemaining"] ?? 0UL);
-            this.DriveType = DriveTypeParser.RawToParam((uint)wmi_storageVolume["DriveType"]);
+            this.Label = wmi_volume["FileSystemLabel"] as string;
+            this.Path = wmi_volume["Path"] as string;
+            this.DriveLetter = wmi_volume["DriveLetter"] as string;
+            this.FileSystemType = FileSystemTypeParser.RawToParam((ushort)wmi_volume["FileSystemType"]);
+            this.Size = (ulong)(wmi_volume["Size"] ?? 0UL);
+            this.SizeFree = (ulong)(wmi_volume["SizeRemaining"] ?? 0UL);
+            this.DriveType = DriveTypeParser.RawToParam((uint)wmi_volume["DriveType"]);
         }
 
         public static IEnumerable<DriveItem> Load()
         {
-            var wmi_storageVolumes = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Volume", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
+            var wmi_volumes = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Volume", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
 
-            return wmi_storageVolumes.Select(x => new DriveItem(x));
+            return wmi_volumes.Select(x => new DriveItem(x));
         }
     }
 }

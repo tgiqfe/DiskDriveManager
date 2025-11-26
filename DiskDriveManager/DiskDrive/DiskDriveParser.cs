@@ -1,5 +1,6 @@
 ﻿
 using DiskDriveManager.Functions;
+using DiskDriveManager.Functions.EnumParser;
 
 namespace DiskDriveManager.DiskDrive
 {
@@ -7,6 +8,7 @@ namespace DiskDriveManager.DiskDrive
     {
         #region PartitionStyle
 
+        /*
         private static Dictionary<string[], PartitionStyle> _mapPartitionStyle = null;
         private static void InitializePartitionStyle()
         {
@@ -32,6 +34,7 @@ namespace DiskDriveManager.DiskDrive
             if (_mapPartitionStyle == null) InitializePartitionStyle();
             return EnumParseHelper.GetCorrect<PartitionStyle>(text, _mapPartitionStyle);
         }
+        */
 
         #endregion
         #region PhysicalDiskType

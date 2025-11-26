@@ -1,4 +1,5 @@
 ﻿using DiskDriveManager.Functions;
+using DiskDriveManager.Functions.EnumParser;
 using System;
 using System.Collections.Generic;
 using System.Management;
@@ -33,16 +34,17 @@ namespace DiskDriveManager.DiskDrive
 
         #endregion
 
-        public DiskItem(ManagementObject wmi_diskdrive, ManagementObject wmi_storage, ManagementObject wmi_physicalDisks)
+        public DiskItem(ManagementObject wmi_diskdrive, ManagementObject wmi_disks, ManagementObject wmi_physicalDisks)
         {
             this.DiskNumber = (uint)wmi_diskdrive["Index"];
             this.DeviceId = wmi_diskdrive["DeviceID"] as string;
-            this.DiskPath = wmi_storage["Path"] as string;
+            this.DiskPath = wmi_disks["Path"] as string;
             this.Size = (ulong)wmi_diskdrive["Size"];
             this.SerialNumber = wmi_diskdrive["SerialNumber"] as string;
             this.Model = wmi_diskdrive["Model"] as string;
             (this.PartitionStyle, this.IsDynamicDisc) = CheckDiskStyle();
-            this.IsOffline = (bool)wmi_storage["IsOffline"];
+            this.IsOffline = (bool)wmi_disks["IsOffline"];
+            /*
             this.PhysicalDiskType = (UInt16)wmi_physicalDisks["MediaType"] switch
             {
                 0 => PhysicalDiskType.Unspecified,
@@ -51,17 +53,19 @@ namespace DiskDriveManager.DiskDrive
                 5 => PhysicalDiskType.SCM,
                 _ => PhysicalDiskType.Unknown,
             };
+            */
+            this.PhysicalDiskType = PhysicalDiskTypeParser.RawToParam((ushort)wmi_physicalDisks["MediaType"]);
         }
 
         public static IEnumerable<DiskItem> Load()
         {
             var wmi_diskdrives = new ManagementClass("Win32_DiskDrive").GetInstances().OfType<ManagementObject>();
-            var wmi_storages = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Disk", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
+            var wmi_disks = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Disk", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
             var wmi_physicaldisks = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_PhysicalDisk", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
 
             return wmi_diskdrives.Select(x =>
                 new DiskItem(x,
-                    wmi_storages.FirstOrDefault(y => (uint)x["Index"] == (uint)y["Number"]),
+                    wmi_disks.FirstOrDefault(y => (uint)x["Index"] == (uint)y["Number"]),
                     wmi_physicaldisks.FirstOrDefault(y => ((uint)x["Index"]).ToString() == y["DeviceId"] as string))).
                 OrderBy(x => x.DiskNumber);
         }
