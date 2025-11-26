@@ -23,7 +23,8 @@ namespace DiskDriveManager.DiskDrive
         public string DriveLetter { get; set; }
         public bool? Unallocated { get; set; }
         public bool? RecoveryPartition { get; set; }
-        
+        public ushort MbrType { get; set; }
+        public string GptType { get; set; }
 
         public PartitionItem() { }
 
