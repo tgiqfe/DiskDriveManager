@@ -16,12 +16,14 @@ namespace DiskDriveManager.DiskDrive
     {
         public uint DiskNumber { get; set; }
         public uint PartitionNumber { get; set; }
-        public bool? Unallocated { get; set; }
         public string DiskPath { get; set; }
         public ulong Offset { get; set; }
         public ulong Size { get; set; }
         public string SizeText { get { return TextFunctions.FormatFileSize(this.Size); } }
         public string DriveLetter { get; set; }
+        public bool? Unallocated { get; set; }
+        public bool? RecoveryPartition { get; set; }
+        
 
         public PartitionItem() { }
 
@@ -39,7 +41,7 @@ namespace DiskDriveManager.DiskDrive
         {
             var wmi_storagePartition = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_Partition", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
 
-            return wmi_storagePartition.Select(x => new PartitionItem(x)).ToArray();
+            return wmi_storagePartition.Select(x => new PartitionItem(x));
         }
     }
 }

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace DiskDriveManager.DiskDrive
+﻿namespace DiskDriveManager.DiskDrive
 {
+    /*
     internal enum FileSystemType
     {
         Unknown = 0,
@@ -24,4 +21,5 @@ namespace DiskDriveManager.DiskDrive
         CSVFS_NTFS = 0x8000,
         CSVFS_REFS = 0x8001,
     }
+    */
 }

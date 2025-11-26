@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace DiskDriveManager.Functions
 {
@@ -45,6 +47,7 @@ namespace DiskDriveManager.Functions
             return String.Format("{0:0.##} {1}", len, sizes[order]);
         }
 
+        /*
         #region Enum parser
 
         /// <summary>
@@ -150,7 +153,7 @@ namespace DiskDriveManager.Functions
         /// <returns></returns>
         public static string FlagsToString<T>(int number, Dictionary<string[], T> map) where T : Enum
         {
-            foreach(var kvp in map)
+            foreach (var kvp in map)
             {
                 if (number == (int)(object)kvp.Value)
                 {
@@ -218,6 +221,26 @@ namespace DiskDriveManager.Functions
         }
 
         /// <summary>
+        /// Number -> Enum
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="number"></param>
+        /// <param name="map"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        public static T GetFlags<T>(int number, Dictionary<string[], T> map) where T : Enum
+        {
+            foreach (var kvp in map)
+            {
+                if (number == (int)(object)kvp.Value)
+                {
+                    return kvp.Value;
+                }
+            }
+            throw new ArgumentException($"The text '{number}' does not correspond to any known value.");
+        }
+
+        /// <summary>
         /// text Merge to Enum
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -263,5 +286,6 @@ namespace DiskDriveManager.Functions
         }
 
         #endregion
+        */
     }
 }

@@ -20,17 +20,17 @@ namespace DiskDriveManager.DiskDrive
         public static PartitionStyle StringToPartitionStyl(string text)
         {
             if (_mapPartitionStyle == null) InitializePartitionStyle();
-            return TextFunctions.StringToFlags<PartitionStyle>(text, _mapPartitionStyle);
+            return EnumParseHelper.StringToFlags<PartitionStyle>(text, _mapPartitionStyle);
         }
         public static string PartitionStyleToString(PartitionStyle val)
         {
             if (_mapPartitionStyle == null) InitializePartitionStyle();
-            return TextFunctions.FlagsToString<PartitionStyle>(val, _mapPartitionStyle);
+            return EnumParseHelper.FlagsToString<PartitionStyle>(val, _mapPartitionStyle);
         }
         public static string GetPartitionStyleString(string text)
         {
             if (_mapPartitionStyle == null) InitializePartitionStyle();
-            return TextFunctions.GetCorrect<PartitionStyle>(text, _mapPartitionStyle);
+            return EnumParseHelper.GetCorrect<PartitionStyle>(text, _mapPartitionStyle);
         }
 
         #endregion
@@ -51,22 +51,23 @@ namespace DiskDriveManager.DiskDrive
         public static PhysicalDiskType StringToPhysicalDiskType(string text)
         {
             if (_mapPhysicalDiskType == null) InitializePhysicalDiskType();
-            return TextFunctions.StringToFlags<PhysicalDiskType>(text, _mapPhysicalDiskType);
+            return EnumParseHelper.StringToFlags<PhysicalDiskType>(text, _mapPhysicalDiskType);
         }
         public static string PhysicalDiskTypeToString(PhysicalDiskType val)
         {
             if (_mapPhysicalDiskType == null) InitializePhysicalDiskType();
-            return TextFunctions.FlagsToString<PhysicalDiskType>(val, _mapPhysicalDiskType);
+            return EnumParseHelper.FlagsToString<PhysicalDiskType>(val, _mapPhysicalDiskType);
         }
         public static string GetPhysicalDiskTypeString(string text)
         {
             if (_mapPhysicalDiskType == null) InitializePhysicalDiskType();
-            return TextFunctions.GetCorrect<PhysicalDiskType>(text, _mapPhysicalDiskType);
+            return EnumParseHelper.GetCorrect<PhysicalDiskType>(text, _mapPhysicalDiskType);
         }
 
         #endregion
         #region FileSystemType
 
+        /*
         private static Dictionary<string[], FileSystemType> _mapFileSystemType = null;
         private static void InitializeFileSystemType()
         {
@@ -94,28 +95,20 @@ namespace DiskDriveManager.DiskDrive
         public static FileSystemType StringToFileSystemType(string text)
         {
             if (_mapFileSystemType == null) InitializeFileSystemType();
-            return TextFunctions.StringToFlags<FileSystemType>(text, _mapFileSystemType);
+            return EnumParseHelper.StringToFlags<FileSystemType>(text, _mapFileSystemType);
         }
         public static string FileSystemTypeToString(FileSystemType val)
         {
             if (_mapFileSystemType == null) InitializeFileSystemType();
-            return TextFunctions.FlagsToString<FileSystemType>(val, _mapFileSystemType);
-        }
-        public static int StringToInt(string text)
-        {
-            if (_mapFileSystemType == null) InitializeFileSystemType();
-            return (int)TextFunctions.StringToFlags<FileSystemType>(text, _mapFileSystemType);
-        }
-        public static string IntToString(int number)
-        {
-            if (_mapFileSystemType == null) InitializeFileSystemType();
-            return TextFunctions.FlagsToString<FileSystemType>(number, _mapFileSystemType);
+            return EnumParseHelper.FlagsToString<FileSystemType>(val, _mapFileSystemType);
         }
         public static string GetFileSystemTypeString(string text)
         {
             if (_mapFileSystemType == null) InitializeFileSystemType();
-            return TextFunctions.GetCorrect<FileSystemType>(text, _mapFileSystemType);
+            return EnumParseHelper.GetCorrect<FileSystemType>(text, _mapFileSystemType);
         }
+        */
+
 
         #endregion
     }
