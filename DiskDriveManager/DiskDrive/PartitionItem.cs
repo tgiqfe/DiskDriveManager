@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Management;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace DiskDriveManager.DiskDrive
 {
@@ -15,6 +16,8 @@ namespace DiskDriveManager.DiskDrive
     /// </summary>
     internal class PartitionItem
     {
+        #region Public parameter
+
         public uint DiskNumber { get; set; }
         public uint PartitionNumber { get; set; }
         public string DiskPath { get; set; }
@@ -23,16 +26,15 @@ namespace DiskDriveManager.DiskDrive
         public string SizeText { get { return TextFunctions.FormatFileSize(this.Size); } }
         public string DriveLetter { get; set; }
         public bool RecoveryPartition { get; set; }
-        public bool? Unallocated { get; set; }
 
-        private static readonly string[] RecoveryGptGuids = new string[]
-        {
-            "DE94BBA4-06D1-4D40-A16A-BFD50179D6AC"
-        };
-        private static readonly int[] RecoveryMbrTypes = new int[]
-        {
-            0x27
-        };
+        // Setting with DiskDriveHelper
+        public bool? Unallocated { get; set; }
+        public DriveItem Drive { get; set; }
+
+        [JsonIgnore]
+        public string ObjectId { get; private set; }
+
+        #endregion
 
         public PartitionItem() { }
 
@@ -45,6 +47,7 @@ namespace DiskDriveManager.DiskDrive
             this.Size = (ulong)wmi_partition["Size"];
             this.DriveLetter = wmi_partition["DriveLetter"] as string;
             this.RecoveryPartition = IsRecoveryPartition(wmi_partition);
+            this.ObjectId = wmi_partition["ObjectId"] as string;
         }
 
         public static IEnumerable<PartitionItem> Load()
@@ -53,6 +56,17 @@ namespace DiskDriveManager.DiskDrive
 
             return wmi_partitions.Select(x => new PartitionItem(x));
         }
+
+        #region Recovery Partition Checking
+
+        private static readonly string[] RecoveryGptGuids = new string[]
+        {
+            "DE94BBA4-06D1-4D40-A16A-BFD50179D6AC"
+        };
+        private static readonly int[] RecoveryMbrTypes = new int[]
+        {
+            0x27
+        };
 
         private bool IsRecoveryPartition(ManagementObject wmi_partition)
         {
@@ -76,7 +90,7 @@ namespace DiskDriveManager.DiskDrive
                 //  Check MBR type Recovery Partition Type
                 Func<object, bool> checkMbrType = (obj) =>
                 {
-                    if(obj != null)
+                    if (obj != null)
                     {
                         var s = obj.ToString();
                         if (s.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
@@ -104,5 +118,7 @@ namespace DiskDriveManager.DiskDrive
             catch { }
             return false;
         }
+
+        #endregion
     }
 }

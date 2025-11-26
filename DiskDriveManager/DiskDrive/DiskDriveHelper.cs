@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Management;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
@@ -11,12 +12,48 @@ namespace DiskDriveManager.DiskDrive
         public static DiskItem[] GetInfo()
         {
             var disks = DiskItem.Load().ToArray();
-            var partitions = PartitionItem.Load();
+            var partitions = PartitionItem.Load().ToArray();
+            var drives = DriveItem.Load().ToArray();
+
+            //  link partition <=> drive
+            LinkPartitionToDrive(partitions, drives);
+
+            //  merge partitions with unallocated spaces
             for (int i = 0; i < disks.Length; i++)
             {
                 disks[i].Partitions = MergePartitionsAndUnallocated(disks[i], partitions);
             }
             return disks;
+        }
+
+        private static void LinkPartitionToDrive(PartitionItem[] partitions, DriveItem[] drives)
+        {
+            var wmi_partitionToDrive = new ManagementClass(@"\\.\root\Microsoft\Windows\Storage", "MSFT_PartitionToVolume", new ObjectGetOptions()).GetInstances().OfType<ManagementObject>();
+            foreach (var link in wmi_partitionToDrive)
+            {
+                string partitionId = null;
+                var partRef = link["Partition"];
+                if (partRef is string pathPart)
+                {
+                    partitionId = new ManagementObject(pathPart)["ObjectId"] as string;
+                }
+
+                string driveId = null;
+                var volRef = link["Volume"];
+                if (volRef is string pathVol)
+                {
+                    driveId = new ManagementObject(pathVol)["ObjectId"] as string;
+                }
+
+                var partition = partitions.FirstOrDefault(x => x.ObjectId == partitionId);
+                var drive = drives.FirstOrDefault(x => x.ObjectId == driveId);
+                if (partition != null && drive != null)
+                {
+                    partition.Drive = drive;
+                    drive.DiskNumber = partition.DiskNumber;
+                    drive.PartitionNumber = partition.PartitionNumber;
+                }
+            }
         }
 
         private static PartitionItem[] MergePartitionsAndUnallocated(DiskItem disk, IEnumerable<PartitionItem> partitions)
@@ -46,7 +83,6 @@ namespace DiskDriveManager.DiskDrive
                     DiskPath = disk.DiskPath,
                     Offset = 0,
                     Size = disk.Size,
-                    DriveLetter = null
                 });
                 return maerged.OrderBy(x => x.Offset).ToArray();
             }
@@ -62,7 +98,6 @@ namespace DiskDriveManager.DiskDrive
                     DiskPath = disk.DiskPath,
                     Offset = 0,
                     Size = parts[0].Offset,
-                    DriveLetter = null
                 });
             }
 
@@ -83,7 +118,6 @@ namespace DiskDriveManager.DiskDrive
                         DiskPath = disk.DiskPath,
                         Offset = prevEnd,
                         Size = cur.Offset - prevEnd,
-                        DriveLetter = null
                     });
                 }
             }
@@ -101,11 +135,13 @@ namespace DiskDriveManager.DiskDrive
                     DiskPath = disk.DiskPath,
                     Offset = lastend,
                     Size = disk.Size - lastend,
-                    DriveLetter = null
                 });
             }
 
             return maerged.OrderBy(x => x.Offset).ToArray();
         }
+
+
+
     }
 }

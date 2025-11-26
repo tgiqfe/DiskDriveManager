@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Management;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace DiskDriveManager.DiskDrive
 {
@@ -30,7 +31,11 @@ namespace DiskDriveManager.DiskDrive
         public bool IsDynamicDisc { get; set; }
         public bool IsOffline { get; set; }
         public PhysicalDiskType PhysicalDiskType { get; set; }
+
         public PartitionItem[] Partitions { get; set; }
+
+        [JsonIgnore]
+        public string ObjectId { get; private set; }
 
         #endregion
 
@@ -44,16 +49,6 @@ namespace DiskDriveManager.DiskDrive
             this.Model = wmi_diskdrive["Model"] as string;
             (this.PartitionStyle, this.IsDynamicDisc) = CheckDiskStyle();
             this.IsOffline = (bool)wmi_disks["IsOffline"];
-            /*
-            this.PhysicalDiskType = (UInt16)wmi_physicalDisks["MediaType"] switch
-            {
-                0 => PhysicalDiskType.Unspecified,
-                3 => PhysicalDiskType.HDD,
-                4 => PhysicalDiskType.SSD,
-                5 => PhysicalDiskType.SCM,
-                _ => PhysicalDiskType.Unknown,
-            };
-            */
             this.PhysicalDiskType = PhysicalDiskTypeParser.RawToParam((ushort)wmi_physicalDisks["MediaType"]);
         }
 

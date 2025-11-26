@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Management;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace DiskDriveManager.DiskDrive
 {
@@ -11,9 +12,12 @@ namespace DiskDriveManager.DiskDrive
     /// Drive information class
     /// [PowerShell example]
     /// $wmi_dsv = Get-CimInstance -ClassName "MSFT_Volume" -Namespace "\\.\root\Microsoft\Windows\Storage"
+    /// $air = Get-CimInstance -ClassName "MSFT_PartitionToVolume" -Namespace "\\.\root\Microsoft\Windows\Storage"
     /// </summary>
     internal class DriveItem
     {
+        #region Public parameter
+
         public string Label { get; set; }
         public string Path { get; set; }
         public string DriveLetter { get; set; }
@@ -24,6 +28,15 @@ namespace DiskDriveManager.DiskDrive
         public string SizeFreeText { get { return TextFunctions.FormatFileSize(SizeFree); } }
         public DriveType DriveType { get; set; }
 
+        // Setting with DiskDriveHelper
+        public uint DiskNumber { get; set; }
+        public uint PartitionNumber { get; set; }
+
+        [JsonIgnore]
+        public string ObjectId { get; private set; }
+
+        #endregion
+
         public DriveItem(ManagementObject wmi_volume)
         {
             this.Label = wmi_volume["FileSystemLabel"] as string;
@@ -33,6 +46,7 @@ namespace DiskDriveManager.DiskDrive
             this.Size = (ulong)(wmi_volume["Size"] ?? 0UL);
             this.SizeFree = (ulong)(wmi_volume["SizeRemaining"] ?? 0UL);
             this.DriveType = DriveTypeParser.RawToParam((uint)wmi_volume["DriveType"]);
+            this.ObjectId = wmi_volume["ObjectId"] as string;
         }
 
         public static IEnumerable<DriveItem> Load()
