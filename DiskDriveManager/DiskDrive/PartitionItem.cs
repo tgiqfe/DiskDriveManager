@@ -45,7 +45,7 @@ namespace DiskDriveManager.DiskDrive
             this.DiskPath = wmi_partition["DiskId"] as string;
             this.Offset = (ulong)wmi_partition["Offset"];
             this.Size = (ulong)wmi_partition["Size"];
-            this.DriveLetter = wmi_partition["DriveLetter"] as string;
+            this.DriveLetter = Convert.ToString(wmi_partition["DriveLetter"]);
             this.RecoveryPartition = IsRecoveryPartition(wmi_partition);
             this.ObjectId = wmi_partition["ObjectId"] as string;
         }
